@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Resume & Job Match Analyzer</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 460px;
+            border-radius: 18px;
+            padding: 36px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            margin: 0 0 10px;
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f172a;
+        }
+
+        p {
+            margin: 0 0 28px;
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .upload-box {
+            border: 2px dashed #c7d2fe;
+            border-radius: 14px;
+            padding: 22px;
+            text-align: center;
+            background: #f8fafc;
+            margin-bottom: 18px;
+            transition: 0.3s;
+        }
+
+        .upload-box:hover {
+            background: #eef2ff;
+            border-color: #6366f1;
+        }
+
+        .upload-box strong {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: #0f172a;
+        }
+
+        .upload-box span {
+            font-size: 13px;
+            color: #64748b;
+        }
+
+        input[type="file"] {
+            margin-top: 10px;
+            font-size: 13px;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            color: white;
+            font-size: 15px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 30px rgba(79, 70, 229, 0.4);
+        }
+
+        .footer-text {
+            margin-top: 18px;
+            font-size: 12px;
+            text-align: center;
+            color: #94a3b8;
+            line-height: 1.6;
+        }
+
+        .footer-text strong {
+            color: #475569;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="card">
+    <h2>Resume & Job Match Analyzer</h2>
+
+    <p>
+        Upload your resume and a job description to evaluate
+        <strong>skill alignment, role fit, seniority match, and ATS readiness</strong>.
+    </p>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <div class="upload-box">
+            <strong>Resume</strong>
+            <span>PDF · DOCX · TXT</span>
+            {{ form.resume_file }}
+        </div>
+
+        <div class="upload-box">
+            <strong>Job Description</strong>
+            <span>PDF · DOCX · TXT</span>
+            {{ form.jd_file }}
+        </div>
+
+        <button type="submit">Analyze Match</button>
+    </form>
+
+    <div class="footer-text">
+        Secure local processing · ATS-aligned scoring · No external AI calls
+    </div>
+</div>
+
+</body>
+</html>

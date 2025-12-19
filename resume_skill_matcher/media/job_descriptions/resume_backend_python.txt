@@ -1,0 +1,9 @@
+Sahil Koshti
+Backend Developer
+
+Skills:
+Python, Django, REST APIs, PostgreSQL, Git, Docker
+
+Experience:
+- Built REST APIs using Django and DRF
+- Worked with PostgreSQL and Redis

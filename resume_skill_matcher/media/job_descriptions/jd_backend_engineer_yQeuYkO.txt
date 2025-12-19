@@ -1,0 +1,7 @@
+Job Description: Backend Engineer
+
+Required Skills:
+Python, Django, REST APIs, SQL, Docker
+
+Nice to have:
+AWS, Redis

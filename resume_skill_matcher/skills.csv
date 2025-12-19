@@ -1,0 +1,132 @@
+skill,aliases,category
+Python,python3|py,Backend
+Java,core java|jdk|jre,Backend
+C,c language,Systems
+C++,cpp|c plus plus,Systems
+C#,c sharp,Backend
+JavaScript,js|ecmascript,Frontend
+TypeScript,ts,Frontend
+Go,golang,Backend
+Rust,rustlang,Systems
+Kotlin,android kotlin,Mobile
+Swift,swift ios,Mobile
+R,r programming,Data
+Scala,scala language,Backend
+PHP,php language,Backend
+
+HTML,html5,Frontend
+CSS,css3,Frontend
+Bootstrap,bootstrap framework,Frontend
+Tailwind CSS,tailwind,Frontend
+React,reactjs,Frontend
+Angular,angular framework,Frontend
+Vue.js,vue,Frontend
+Next.js,nextjs,Frontend
+Node.js,nodejs|node,Backend
+Express.js,express,Backend
+Django,django framework,Backend
+Flask,flask framework,Backend
+FastAPI,fast api,Backend
+Spring,spring framework,Backend
+Spring Boot,springboot,Backend
+
+SQL,structured query language,Database
+MySQL,mysql database,Database
+PostgreSQL,postgres|psql,Database
+SQLite,sqlite database,Database
+NoSQL,non relational database,Database
+MongoDB,mongodb database,Database
+Redis,redis cache,Database
+Cassandra,apache cassandra,Database
+Firebase,firebase database,Database
+
+Data Analysis,data analytics,Data
+Data Visualization,data viz,Data
+Pandas,pandas python,Data
+NumPy,numpy python,Data
+Matplotlib,matplotlib python,Data
+Seaborn,seaborn python,Data
+Power BI,powerbi,Data
+Tableau,tableau dashboard,Data
+Excel,microsoft excel,Data
+
+Machine Learning,ml|machine intelligence,AI
+Deep Learning,dl|neural networks,AI
+Artificial Intelligence,ai,AI
+NLP,natural language processing,AI
+Computer Vision,cv,AI
+Scikit-learn,sklearn,AI
+TensorFlow,tf,AI
+Keras,keras framework,AI
+PyTorch,pytorch framework,AI
+XGBoost,xgboost library,AI
+LightGBM,lightgbm library,AI
+
+Generative AI,gen ai,AI
+LLM,large language model,AI
+ChatGPT,openai chatgpt,AI
+OpenAI API,openai api,AI
+LangChain,lang chain,AI
+LlamaIndex,llama index,AI
+Prompt Engineering,prompt design,AI
+RAG,retrieval augmented generation,AI
+Vector Database,vector db,AI
+FAISS,faiss library,AI
+Pinecone,pinecone vector db,AI
+Chroma,chroma db,AI
+
+AWS,amazon web services|ec2,Cloud
+Azure,microsoft azure,Cloud
+Google Cloud,gcp|google cloud platform,Cloud
+Docker,docker container,DevOps
+Kubernetes,k8s,DevOps
+Terraform,infrastructure as code,DevOps
+CI/CD,continuous integration|continuous deployment,DevOps
+GitHub Actions,github actions,DevOps
+Jenkins,jenkins pipeline,DevOps
+
+Git,git version control,Tools
+GitHub,github repository,Tools
+GitLab,gitlab repository,Tools
+Bitbucket,bitbucket repository,Tools
+Linux,linux os,Tools
+Bash,bash scripting,Tools
+Shell Scripting,shell script,Tools
+
+OOPS,object oriented programming,CS
+Data Structures,data structures and algorithms,CS
+Algorithms,algorithm design,CS
+System Design,system architecture,CS
+Design Patterns,software design patterns,CS
+REST API,restful api,Backend
+Microservices,microservice architecture,Backend
+MVC,model view controller,Backend
+
+Unit Testing,unit test,Testing
+Integration Testing,integration test,Testing
+PyTest,pytest framework,Testing
+JUnit,junit testing,Testing
+Selenium,selenium testing,Testing
+
+Hadoop,apache hadoop,BigData
+Spark,apache spark,BigData
+PySpark,pyspark framework,BigData
+Kafka,apache kafka,BigData
+
+Cybersecurity,information security,Security
+Network Security,network protection,Security
+Penetration Testing,pen testing,Security
+Ethical Hacking,ethical hacker,Security
+
+Android,android development,Mobile
+iOS,ios development,Mobile
+Flutter,flutter framework,Mobile
+React Native,react native framework,Mobile
+
+Software Development,software engineering,General
+Backend Developer,backend engineer,General
+Frontend Developer,frontend engineer,General
+Full Stack Developer,full stack engineer,General
+Data Scientist,data science role,General
+Data Engineer,data engineering role,General
+ML Engineer,machine learning engineer,General

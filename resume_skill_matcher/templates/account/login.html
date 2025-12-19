@@ -1,0 +1,56 @@
+{% load socialaccount %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .box {
+            background: white;
+            padding: 30px;
+            width: 350px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,.1);
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>Login</h2>
+
+    <!-- Email / Password -->
+    <form method="post" action="{% url 'account_login' %}">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Login</button>
+    </form>
+
+    <hr>
+
+    <!-- Google Login -->
+    <a href="{% provider_login_url 'google' %}">
+        <button>Login with Google</button>
+    </a>
+
+    <p style="margin-top:10px;">
+        Don’t have an account?
+        <a href="{% url 'account_signup' %}">Sign up</a>
+    </p>
+</div>
+
+</body>
+</html>
