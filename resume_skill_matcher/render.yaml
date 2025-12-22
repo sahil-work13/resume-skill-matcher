@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: resume-skill-matcher
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn resume_skill_matcher.wsgi:application
