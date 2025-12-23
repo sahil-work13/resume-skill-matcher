@@ -14,8 +14,13 @@ from .utils import (
     detect_seniority,
     extract_requirements,
     requirement_match_score,
-    role_fit_score
-
+    role_fit_score,
+    recruiter_resume_feedback,
+    rewrite_resume_bullets,
+    generate_skill_roadmap,
+    skill_gap_score,
+    generate_mock_interview_questions,
+    ats_keyword_suggestions
 )
 from .reports.pdf_report import generate_pdf_report
 from .reports.docx_report import generate_docx_report
@@ -57,22 +62,19 @@ def upload_resume_and_jd(request):
             missing_skills = list(set(jd_skills) - set(resume_skills))
             score = calculate_match_score(resume_skills, jd_skills)
 
-            # ---------- SCORE BREAKDOWN (FIXED) ----------
             score_breakdown = {
                 "total_jd_skills": len(jd_skills),
                 "matched_skills": len(matched_skills),
                 "missing_skills": len(missing_skills),
             }
 
-            # ---------- CONFIDENCE LEVEL ----------
-            if score >= 75:
-                confidence_level = "High"
-            elif score >= 50:
-                confidence_level = "Medium"
-            else:
-                confidence_level = "Low"
+            confidence_level = (
+                "High" if score >= 75 else
+                "Medium" if score >= 50 else
+                "Low"
+            )
 
-            # ---------- ROLE & SENIORITY ----------
+            # ---------- ROLE & LEVEL ----------
             jd_role = detect_job_role(jd_text)
             resume_role = detect_job_role(resume_text)
 
@@ -85,23 +87,23 @@ def upload_resume_and_jd(request):
             requirements = extract_requirements(jd_text)
             req_match_score = requirement_match_score(resume_text, requirements)
 
-            # ---------- RESUME SECTION SCORES (WORKING) ----------
+            # ---------- SECTION SCORES ----------
             section_scores = {
                 "technical": min(100, score + 10),
                 "experience": score,
                 "ats": min(100, score + 20),
             }
 
-            # ---------- MISMATCH WARNINGS ----------
+            # ---------- WARNINGS ----------
             warnings = []
 
-            if jd_role != "Unknown" and resume_role != "Unknown" and jd_role != resume_role:
+            if jd_role != resume_role:
                 warnings.append({
                     "level": "critical",
-                    "message": f"Resume role does not match the job role ({resume_role} vs {jd_role})."
+                    "message": f"Resume role does not match JD role ({resume_role} vs {jd_role})."
                 })
 
-            if jd_level != "Unknown" and resume_level != "Unknown" and jd_level != resume_level:
+            if jd_level != resume_level:
                 warnings.append({
                     "level": "moderate",
                     "message": f"Expected {jd_level} level but resume appears {resume_level}."
@@ -110,61 +112,87 @@ def upload_resume_and_jd(request):
             if req_match_score < 50:
                 warnings.append({
                     "level": "warning",
-                    "message": "Less than 50% of job requirements are addressed in the resume."
+                    "message": "Less than 50% of job requirements are covered."
                 })
 
             if not warnings:
                 warnings.append({
                     "level": "success",
-                    "message": "Resume aligns well with role, seniority, and requirements."
+                    "message": "Resume aligns well with the job description."
                 })
 
-            # ---------- ANALYTICS ----------
-            MatchAnalytics.objects.create(
-                user=request.user,
-                score=score,
-                semantic_score=role_score
-            )
-
-            # ---------- ATS SCORECARD ----------
+            # ---------- ATS SCORE ----------
             ats_scores, ats_insights = ats_scorecard(
-                resume_text,
-                jd_text,
-                resume_skills,
-                jd_skills
+                resume_text, jd_text, resume_skills, jd_skills
             )
 
-            
+            # ---------- AI FEEDBACK ----------
+            recruiter_feedback = recruiter_resume_feedback(resume_text, jd_text)
+            if not recruiter_feedback:
+                recruiter_feedback = (
+                    "Resume is relevant but can improve keyword alignment, impact statements, "
+                    "and clarity for better recruiter appeal."
+                )
 
-            # ---------- SAVE FOR DOWNLOAD ----------
+            # ---------- SAVE SESSION ----------
             request.session["score"] = score
             request.session["skills"] = resume_skills
             request.session["missing_skills"] = missing_skills
 
-            # ---------- RENDER ----------
-            return render(request, "result.html", {
+            rewrite_suggestions = rewrite_resume_bullets(resume_text, jd_text)
+            skill_roadmap = generate_skill_roadmap(missing_skills)
+            skill_gap = skill_gap_score(resume_text, jd_text)
+            mock_interview = generate_mock_interview_questions(resume_text, jd_text)
+            ats_keywords = ats_keyword_suggestions(resume_text, jd_text)
+
+            #--------REPORT CALL---------
+
+            report_context = {
                 "score": score,
                 "confidence_level": confidence_level,
-
                 "skills": resume_skills,
                 "missing_skills": missing_skills,
-
                 "score_breakdown": score_breakdown,
                 "section_scores": section_scores,
-
                 "jd_role": jd_role,
                 "resume_role": resume_role,
                 "role_fit_score": role_score,
                 "jd_level": jd_level,
                 "resume_level": resume_level,
-
                 "requirements": requirements,
                 "requirement_match_score": req_match_score,
-
                 "warnings": warnings,
-                #"rewrite_suggestion": rewrite_suggestion,
                 "ats_scores": ats_scores,
                 "ats_insights": ats_insights,
+                "recruiter_feedback": recruiter_feedback,
+                "rewrite_suggestions": rewrite_suggestions,
+                "skill_roadmap": skill_roadmap,
+                "skill_gap": skill_gap,
+                "mock_interview": mock_interview,
+                "ats_keywords": ats_keywords,
+            }
+            request.session["report_context"] = report_context
+
+
+            # ---------- RENDER RESULT ----------
+            return render(request, "result.html", {
+                "score": score,
+                "confidence_level": confidence_level,
+                "skills": resume_skills,
+                "missing_skills": missing_skills,
+                "score_breakdown": score_breakdown,
+                "section_scores": section_scores,
+                "jd_role": jd_role,
+                "resume_role": resume_role,
+                "role_fit_score": role_score,
+                "jd_level": jd_level,
+                "resume_level": resume_level,
+                "requirements": requirements,
+                "requirement_match_score": req_match_score,
+                "warnings": warnings,
+                "ats_scores": ats_scores,
+                "ats_insights": ats_insights,
+                "recruiter_feedback": recruiter_feedback,
             })
 
     else:
@@ -173,18 +201,19 @@ def upload_resume_and_jd(request):
     return render(request, "upload_resume.html", {"form": form})
 
 
+
 @login_required
 def download_report(request):
     format = request.GET.get("format", "pdf")
+    context = request.session.get("report_context")
 
-    score = request.session.get("score", 0)
-    skills = request.session.get("skills", [])
-    missing_skills = request.session.get("missing_skills", [])
+    if not context:
+        return HttpResponse("No report data found.", status=400)
 
     if format == "pdf":
         response = HttpResponse(content_type="application/pdf")
         response["Content-Disposition"] = 'attachment; filename="resume_report.pdf"'
-        generate_pdf_report(response, score, skills, missing_skills)
+        generate_pdf_report(response, context)
         return response
 
     elif format == "docx":
@@ -192,7 +221,7 @@ def download_report(request):
             content_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
         )
         response["Content-Disposition"] = 'attachment; filename="resume_report.docx"'
-        generate_docx_report(response, score, skills, missing_skills)
+        generate_docx_report(response, context)
         return response
 
 

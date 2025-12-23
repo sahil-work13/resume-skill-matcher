@@ -311,6 +311,21 @@ ATS-aligned comparison of resume and job description
 <p><strong>Role Fit Score:</strong> {{ role_fit_score }}%</p>
 <p><strong>Requirement Coverage:</strong> {{ requirement_match_score }}%</p>
 
+<div class="section">
+    <h3>🧑‍💼 Recruiter Feedback</h3>
+
+    <div class="rewrite-box">
+        {% for line in recruiter_feedback.splitlines %}
+        {% if "SECTION:" in line %}
+            <h4>{{ line|cut:"SECTION:" }}</h4>
+        {% elif line|length > 0 %}
+            <p>{{ line }}</p>
+        {% endif %}
+    {% endfor %}
+    </div>
+</div>
+
+
 <h4 style="margin-top:18px;">🚦 Match Insights</h4>
 {% for w in warnings %}
 <div class="warning-box warning-{{ w.level }}">

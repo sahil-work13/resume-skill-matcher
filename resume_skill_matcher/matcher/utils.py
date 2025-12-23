@@ -1,20 +1,25 @@
 # matcher/utils.py
+
 import pdfplumber
 import re
 import docx
 import os
-from skills.master_skills import MASTER_SKILLS
 from dotenv import load_dotenv
-
-
+from skills.master_skills import MASTER_SKILLS
+from google import genai
+import time
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
+# ---------------------------------------------------------
+# ENV SETUP
+# ---------------------------------------------------------
 load_dotenv()
+print("Gemini key loaded:", bool(os.environ.get("GEMINI_API_KEY")))
+print("Gemini SDK path:", genai.__file__)
 
-HF_API_KEY = os.getenv("HF_API_KEY")
-print("HF TOKEN CHECK:", HF_API_KEY[:10] if HF_API_KEY else "NOT FOUND")
-
-# =========================================================
-# ROLE KEYWORDS (UNCHANGED – GOOD)
-# =========================================================
+# ---------------------------------------------------------
+# ROLE KEYWORDS
+# ---------------------------------------------------------
 ROLE_KEYWORDS = {
     "Data Scientist": [
         "data scientist", "machine learning", "statistics",
@@ -50,9 +55,9 @@ ROLE_KEYWORDS = {
     ],
 }
 
-# =========================================================
+# ---------------------------------------------------------
 # TEXT EXTRACTION
-# =========================================================
+# ---------------------------------------------------------
 def extract_text_from_pdf(file_path):
     text = ""
     with pdfplumber.open(file_path) as pdf:
@@ -80,9 +85,9 @@ def extract_text_from_file(file_path):
     else:
         raise ValueError(f"Unsupported file format: {ext}")
 
-# =========================================================
+# ---------------------------------------------------------
 # SKILL EXTRACTION
-# =========================================================
+# ---------------------------------------------------------
 def extract_skills(text):
     found = set()
     text = text.lower()
@@ -94,9 +99,9 @@ def extract_skills(text):
 
     return list(found)
 
-# =========================================================
+# ---------------------------------------------------------
 # SKILL MATCH SCORE
-# =========================================================
+# ---------------------------------------------------------
 def calculate_match_score(resume_skills, jd_skills):
     if not jd_skills:
         return min(60, len(resume_skills) * 5)
@@ -104,9 +109,9 @@ def calculate_match_score(resume_skills, jd_skills):
     common = set(resume_skills) & set(jd_skills)
     return round((len(common) / len(jd_skills)) * 100, 2)
 
-# =========================================================
-# ROLE DETECTION (JD + RESUME)
-# =========================================================
+# ---------------------------------------------------------
+# ROLE DETECTION
+# ---------------------------------------------------------
 def detect_job_role(text):
     text = text.lower()
     scores = {}
@@ -117,9 +122,9 @@ def detect_job_role(text):
     detected = max(scores, key=scores.get)
     return detected if scores[detected] > 0 else "Unknown"
 
-# =========================================================
+# ---------------------------------------------------------
 # SENIORITY DETECTION
-# =========================================================
+# ---------------------------------------------------------
 def detect_seniority(text):
     text = text.lower()
 
@@ -134,9 +139,9 @@ def detect_seniority(text):
 
     return "Unspecified"
 
-# =========================================================
-# REQUIREMENT EXTRACTION (FIXED)
-# =========================================================
+# ---------------------------------------------------------
+# REQUIREMENTS EXTRACTION
+# ---------------------------------------------------------
 REQUIREMENT_PATTERNS = [
     "experience", "knowledge of", "hands-on", "must have",
     "should have", "required", "responsible for",
@@ -144,7 +149,6 @@ REQUIREMENT_PATTERNS = [
 ]
 
 def extract_requirements(jd_text):
-    # Keep sentence structure
     sentences = re.split(r"[.•\n]", jd_text)
     requirements = []
 
@@ -157,10 +161,9 @@ def extract_requirements(jd_text):
 
     return requirements
 
-
-# =========================================================
-# REQUIREMENT MATCH SCORE (REAL)
-# =========================================================
+# ---------------------------------------------------------
+# REQUIREMENT MATCH SCORE
+# ---------------------------------------------------------
 def requirement_match_score(resume_text, requirements):
     if not requirements:
         return 0
@@ -175,78 +178,200 @@ def requirement_match_score(resume_text, requirements):
 
     return round((matched / len(requirements)) * 100, 2)
 
-# =========================================================
+# ---------------------------------------------------------
 # ROLE FIT SCORE
-# =========================================================
+# ---------------------------------------------------------
 def role_fit_score(jd_role, resume_role):
     if jd_role == "Unknown" or resume_role == "Unknown":
         return 0
     return 100 if jd_role == resume_role else 40
 
-
-import re
-
+# ---------------------------------------------------------
+# ATS SCORECARD
+# ---------------------------------------------------------
 def ats_scorecard(resume_text, jd_text, resume_skills, jd_skills):
     scores = {}
     insights = []
 
-    # 1️⃣ Keyword Match
-    if jd_skills:
-        keyword_score = round((len(set(resume_skills) & set(jd_skills)) / len(jd_skills)) * 100, 2)
-    else:
-        keyword_score = 60
-
+    # Keyword Match
+    keyword_score = (
+        round((len(set(resume_skills) & set(jd_skills)) / len(jd_skills)) * 100, 2)
+        if jd_skills else 60
+    )
     scores["keyword_match"] = keyword_score
 
     if keyword_score < 50:
-        insights.append("Low keyword match. Important job keywords are missing from the resume.")
+        insights.append("Low keyword match. Important job keywords are missing.")
 
-    # 2️⃣ Section Coverage
+    # Section Coverage
     sections = ["experience", "education", "skills", "projects", "summary"]
-    section_hits = sum(1 for s in sections if s in resume_text.lower())
-    section_score = round((section_hits / len(sections)) * 100, 2)
+    section_hits = sum(1 for s in sections if s in resume_text)
+    scores["section_coverage"] = round((section_hits / len(sections)) * 100, 2)
 
-    scores["section_coverage"] = section_score
+    # Skill Density
+    skill_mentions = sum(resume_text.count(skill.lower()) for skill in resume_skills)
+    scores["skill_relevance"] = min(100, skill_mentions * 6)
 
-    if section_score < 60:
-        insights.append("Some important resume sections are missing or not clearly labeled.")
-
-    # 3️⃣ Skill Relevance Density
-    words = resume_text.lower().split()
-    skill_mentions = sum(words.count(skill.lower()) for skill in resume_skills)
-
-    relevance_score = min(100, skill_mentions * 6)
-    scores["skill_relevance"] = relevance_score
-
-    if relevance_score < 50:
-        insights.append("Skills are mentioned too few times. Increase repetition naturally in experience bullets.")
-
-    # 4️⃣ Readability (sentence length heuristic)
-    sentences = re.split(r'[.!?]', resume_text)
+    # Readability
+    sentences = re.split(r"[.!?]", resume_text)
     avg_len = sum(len(s.split()) for s in sentences if s.strip()) / max(len(sentences), 1)
+    scores["readability"] = 85 if avg_len <= 20 else 70 if avg_len <= 30 else 50
 
-    if avg_len <= 20:
-        readability = 85
-    elif avg_len <= 30:
-        readability = 70
-    else:
-        readability = 50
-
-    scores["readability"] = readability
-
-    if readability < 60:
-        insights.append("Long sentences detected. Shorter bullet points improve ATS parsing.")
-
-    # 5️⃣ Overall ATS Score
-    overall = round(
-        (keyword_score * 0.35) +
-        (section_score * 0.2) +
-        (relevance_score * 0.25) +
-        (readability * 0.2),
+    scores["overall"] = round(
+        scores["keyword_match"] * 0.35 +
+        scores["section_coverage"] * 0.2 +
+        scores["skill_relevance"] * 0.25 +
+        scores["readability"] * 0.2,
         2
     )
 
-    scores["overall"] = overall
-
     return scores, insights
 
+# ---------------------------------------------------------
+# AI RECRUITER FEEDBACK (FINAL FIX)
+# ---------------------------------------------------------
+def recruiter_resume_feedback(resume_text, jd_text):
+    api_key = os.environ.get("GEMINI_API_KEY")
+    if not api_key:
+        return "AI feedback unavailable: API key not configured."
+
+    client = genai.Client(api_key=api_key)
+
+    prompt = f"""
+    You are a senior technical recruiter.
+    Review the resume against the job description.
+    Provide actionable ATS-friendly improvement suggestions.
+    Give SHORT, SIMPLE, and CLEAR feedback.
+    Do NOT use markdown, stars (*), hashes (#), or bullet symbols.
+    Use plain text only.
+
+    Structure the response EXACTLY like this:
+
+    SECTION: Overall Fit
+    (one short sentence)
+
+    SECTION: Strengths
+    - sentence
+    - sentence
+
+    SECTION: Improvements
+    - sentence
+    - sentence
+
+    SECTION: Missing Skills (if any)
+    - sentence
+    - sentence
+
+    Keep the response under 120 words.
+
+
+        JOB DESCRIPTION:
+        {jd_text[:1500]}
+
+        RESUME:
+        {resume_text[:1500]}
+    """
+
+    models = ["gemini-2.5-flash", "gemini-pro"]
+
+    for model in models:
+        for attempt in range(3):  # 🔁 retry 3 times
+            try:
+                response = client.models.generate_content(
+                    model=model,
+                    contents=prompt
+                )
+                return response.text
+
+            except Exception as e:
+                error = str(e)
+                if "503" in error or "overloaded" in error.lower():
+                    time.sleep(2 * (attempt + 1))  # ⏳ backoff
+                    continue
+                else:
+                    break  # different error → try next model
+
+    return "AI feedback temporarily unavailable due to high load. Please try again."
+
+
+def call_gemini(prompt):
+    from google import genai
+    import os, time
+
+    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+
+    for model in ["gemini-2.5-flash", "gemini-pro"]:
+        try:
+            response = client.models.generate_content(
+                model=model,
+                contents=prompt
+            )
+            return response.text.strip()
+        except Exception as e:
+            if "503" in str(e):
+                time.sleep(2)
+                continue
+    return "AI service temporarily unavailable."
+
+def rewrite_resume_bullets(resume_text, jd_text):
+    prompt = f"""
+    Rewrite weak resume bullet points into strong, ATS-friendly bullets.
+    Use action verbs and metrics.
+    Return 5 improved bullets only.
+    Plain text only.
+
+    JOB DESCRIPTION:
+    {jd_text[:1200]}
+
+    RESUME:
+    {resume_text[:1200]}
+    """
+    return call_gemini(prompt)
+
+
+def generate_skill_roadmap(missing_skills):
+    roadmap = {}
+    for skill in missing_skills:
+        roadmap[skill] = [
+            f"Learn fundamentals of {skill}",
+            f"Build a small project using {skill}",
+            f"Apply {skill} in a real-world scenario"
+        ]
+    return roadmap
+
+
+
+def skill_gap_score(resume_text, jd_text):
+    tfidf = TfidfVectorizer(stop_words="english")
+    vectors = tfidf.fit_transform([resume_text, jd_text])
+    similarity = cosine_similarity(vectors[0], vectors[1])[0][0]
+    return round((1 - similarity) * 100, 2)
+
+def generate_mock_interview_questions(resume_text, jd_text):
+    prompt = f"""
+    Generate 5 technical interview questions based on the resume and job description.
+    Mix theory + practical questions.
+    Plain text, numbered list.
+
+    JOB DESCRIPTION:
+    {jd_text[:1200]}
+
+    RESUME:
+    {resume_text[:1200]}
+    """
+    return call_gemini(prompt)
+
+
+def ats_keyword_suggestions(resume_text, jd_text):
+    prompt = f"""
+    Extract important ATS keywords from the job description
+    that are missing or weak in the resume.
+    Return as a simple list.
+
+    JOB DESCRIPTION:
+    {jd_text[:1200]}
+
+    RESUME:
+    {resume_text[:1200]}
+    """
+    return call_gemini(prompt)
