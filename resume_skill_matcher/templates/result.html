@@ -168,6 +168,37 @@ h1 { margin:0; font-size:30px; color:#0f172a; }
     color:#166534;
     border-left:6px solid #16a34a;
 }
+
+/* AI SECTIONS */
+.ai-section {
+    margin-top:30px;
+}
+
+.ai-section ul,
+.ai-section ol {
+    padding-left:18px;
+    font-size:14px;
+    line-height:1.7;
+    color:#334155;
+}
+
+.ai-chip {
+    background:#eef2ff;
+    color:#3730a3;
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:12px;
+    font-weight:500;
+    display:inline-block;
+    margin:4px 6px 4px 0;
+}
+
+.ai-muted {
+    font-size:13px;
+    color:#64748b;
+    margin-bottom:12px;
+}
+
 </style>
 </head>
 
@@ -297,6 +328,7 @@ ATS-aligned comparison of resume and job description
 </div>
 
 
+
 <!-- ROLE MATCH -->
 <div class="section">
 <h3>🎯 Role & Requirement Alignment</h3>
@@ -365,6 +397,27 @@ ATS-aligned comparison of resume and job description
 <a href="{% url 'download_report' %}?format=pdf">Download PDF</a>
 <a href="{% url 'download_report' %}?format=docx">Download DOCX</a>
 </div>
+
+<div id="chat-widget-container" style="position: fixed; bottom: 30px; right: 30px; z-index: 9999; font-family: 'Inter', sans-serif;">
+    <div id="chat-bubble" style="background: white; padding: 12px 20px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 15px; font-size: 14px; color: #1e293b; border: 1px solid #e2e8f0; position: relative; animation: float 3s ease-in-out infinite;">
+        <strong>Hi!</strong> I can help you improve this resume.
+        <div style="position: absolute; bottom: -8px; right: 20px; width: 15px; height: 15px; background: white; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0; transform: rotate(45deg);"></div>
+    </div>
+    
+    <a href="{% url 'resume_chatbot_page' %}" style="display: flex; align-items: center; justify-content: center; width: 65px; height: 65px; background: linear-gradient(135deg, #6366f1, #4f46e5); border-radius: 50%; box-shadow: 0 10px 30px rgba(79, 70, 229, 0.5); text-decoration: none; transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); float: right;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/></svg>
+    </a>
+</div>
+
+<style>
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+}
+#chat-widget-container a:hover {
+    transform: scale(1.15) rotate(5deg);
+}
+</style>
 
 </div>
 </body>

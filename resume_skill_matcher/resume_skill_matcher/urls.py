@@ -24,7 +24,10 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('', include('matcher.urls')),
     path("api/skills/", include("skills.api.urls")),
-    path("api/skills/", include("skills.urls")),
+    path("skills/", include("skills.urls")),
+    
+
+    
 
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

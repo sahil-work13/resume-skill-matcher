@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>AI Career Assistant</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+<style>
+:root {
+    --bg-dark:#020617;
+    --bg-main:#0f172a;
+    --bg-card:#1e293b;
+    --primary:#4f46e5;
+    --text:#f1f5f9;
+    --muted:#94a3b8;
+    --border:#334155;
+}
+
+* { box-sizing:border-box; }
+
+body {
+    margin:0;
+    font-family:Inter,sans-serif;
+    background:var(--bg-main);
+    color:var(--text);
+    height:100vh;
+    display:flex;
+    overflow:hidden;
+}
+
+/* ================= SIDEBAR ================= */
+.sidebar {
+    width:280px;
+    background:var(--bg-dark);
+    padding:20px;
+    display:flex;
+    flex-direction:column;
+    border-right:1px solid var(--border);
+    transition:transform .3s ease;
+}
+
+.sidebar.hidden {
+    transform:translateX(-100%);
+}
+
+.sidebar-header {
+    font-weight:700;
+    font-size:18px;
+    margin-bottom:20px;
+}
+
+.new-chat-btn {
+    background:var(--primary);
+    border:none;
+    padding:12px;
+    border-radius:10px;
+    color:white;
+    font-weight:600;
+    cursor:pointer;
+    margin-bottom:20px;
+}
+
+.history-list {
+    flex:1;
+    overflow-y:auto;
+}
+
+.history-item {
+    background:rgba(255,255,255,.04);
+    padding:10px 12px;
+    border-radius:10px;
+    margin-bottom:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    cursor:pointer;
+}
+
+.history-title {
+    flex:1;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    font-size:13px;
+    color:var(--muted);
+}
+
+.history-item:hover .history-title {
+    color:white;
+}
+
+/* 3-dot menu */
+.menu {
+    position:relative;
+}
+
+.menu-btn {
+    background:none;
+    border:none;
+    color:var(--muted);
+    cursor:pointer;
+    font-size:18px;
+}
+
+.menu-dropdown {
+    display:none;
+    position:absolute;
+    right:0;
+    top:20px;
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:8px;
+    overflow:hidden;
+    z-index:50;
+}
+
+.menu-dropdown button {
+    background:none;
+    border:none;
+    padding:8px 12px;
+    color:var(--text);
+    font-size:13px;
+    width:100%;
+    text-align:left;
+    cursor:pointer;
+}
+
+.menu-dropdown button:hover {
+    background:rgba(255,255,255,.08);
+}
+
+.menu.open .menu-dropdown {
+    display:block;
+}
+
+/* ================= MAIN ================= */
+.main {
+    flex:1;
+    display:flex;
+    flex-direction:column;
+}
+
+.header {
+    padding:16px 24px;
+    background:var(--bg-dark);
+    border-bottom:1px solid var(--border);
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.toggle-btn {
+    font-size:20px;
+    background:none;
+    border:none;
+    color:white;
+    cursor:pointer;
+}
+
+.header h2 {
+    margin:0;
+    font-size:18px;
+}
+
+/* ================= CHAT ================= */
+#chat-window {
+    flex:1;
+    overflow-y:auto;
+    padding:30px 20px 160px;
+    display:flex;
+    flex-direction:column;
+    gap:20px;
+}
+
+.msg {
+    max-width:75%;
+    padding:14px 18px;
+    border-radius:16px;
+    line-height:1.6;
+}
+
+.msg.user {
+    align-self:flex-end;
+    background:var(--primary);
+    color:white;
+}
+
+.msg.bot {
+    align-self:flex-start;
+    background:var(--bg-card);
+    border:1px solid var(--border);
+}
+
+.msg.bot h3 { margin:10px 0 5px; }
+
+/* ================= INPUT ================= */
+.input-container {
+    position:fixed;
+    bottom:0;
+    left:0;
+    right:0;
+    padding:30px 0 40px;
+    background:linear-gradient(transparent, var(--bg-main) 45%);
+}
+
+.input-wrapper {
+    max-width:900px;
+    margin:auto;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:26px;
+    padding:12px 16px;
+}
+
+input {
+    flex:1;
+    background:none;
+    border:none;
+    outline:none;
+    color:white;
+    font-size:15px;
+}
+
+button.send {
+    background:var(--primary);
+    border:none;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    color:white;
+    cursor:pointer;
+}
+
+#typing {
+    text-align:center;
+    font-size:12px;
+    color:var(--primary);
+    display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar" id="sidebar">
+    <div class="sidebar-header">Chat History</div>
+    <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+    <div class="history-list" id="history"></div>
+</div>
+
+<div class="main">
+    <div class="header">
+        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+        <h2>AI Career Assistant</h2>
+    </div>
+
+    <div id="chat-window">
+        <div class="msg bot">
+            Hi {{ user_display_name }}, ask anything about your resume 👋
+        </div>
+    </div>
+
+    <div id="typing">Assistant is thinking...</div>
+
+    <div class="input-container">
+        <div class="input-wrapper">
+             <label for="file-upload" style="cursor:pointer;font-size:20px">➕</label>
+    <input type="file" id="file-upload" multiple hidden onchange="uploadFiles()">
+
+            <input id="input" placeholder="Ask a question…" onkeydown="if(event.key==='Enter')send()">
+            <button class="send" onclick="send()">➤</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentSession = null;
+
+/* ================= FILE UPLOAD ================= */
+async function uploadFiles(){
+    const input = document.getElementById('file-upload');
+    if (!input.files.length) return;
+
+    const form = new FormData();
+    for (const f of input.files) form.append('files', f);
+
+    const res = await fetch('/api/upload/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+        body: form
+    });
+
+    const data = await res.json();
+    addMsg(data.message || 'Files uploaded', 'bot');
+    input.value = '';
+}
+
+/* ================= UI HELPERS ================= */
+function addMsg(text, type){
+    const d = document.createElement('div');
+    d.className = `msg ${type}`;
+    d.innerHTML = type === 'bot' ? marked.parse(text) : text;
+    document.getElementById('chat-window').appendChild(d);
+    d.scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ================= SEND MESSAGE ================= */
+async function send(){
+    const i = document.getElementById('input');
+    if (!i.value.trim()) return;
+
+    addMsg(i.value, 'user');
+    document.getElementById('typing').style.display = 'block';
+
+    const res = await fetch('/chatbot/api/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            question: i.value,
+            session_id: currentSession
+        })
+    });
+
+    const data = await res.json();
+    currentSession = data.session_id;
+
+    addMsg(data.answer, 'bot');
+    i.value = '';
+    document.getElementById('typing').style.display = 'none';
+
+    loadHistory(); // 🔥 realtime refresh
+}
+
+/* ================= SIDEBAR HISTORY ================= */
+async function loadHistory() {
+    const res = await fetch('/api/history/');
+    const chats = await res.json();
+
+    const list = document.querySelector('.history-list');
+    list.innerHTML = '';
+
+    chats.forEach(chat => {
+        const div = document.createElement('div');
+        div.className = 'history-item';
+        div.innerHTML = `
+            <span class="chat-title" onclick="loadSession(${chat.id})">
+                ${chat.title}
+            </span>
+
+            <span class="three-dots" onclick="toggleMenu(event, ${chat.id})">⋮</span>
+
+            <div class="dropdown-menu" id="menu-${chat.id}">
+                <div onclick="renameChat(${chat.id})">Rename</div>
+                <div onclick="deleteChat(${chat.id})">Delete</div>
+            </div>
+        `;
+        list.appendChild(div);
+    });
+}
+
+/* ================= MENU TOGGLE ================= */
+function toggleMenu(event, id) {
+    event.stopPropagation();
+
+    document.querySelectorAll('.dropdown-menu')
+        .forEach(m => m.style.display = 'none');
+
+    const menu = document.getElementById(`menu-${id}`);
+    menu.style.display = 'block';
+}
+
+document.addEventListener('click', () => {
+    document.querySelectorAll('.dropdown-menu')
+        .forEach(m => m.style.display = 'none');
+});
+
+/* ================= CHAT ACTIONS ================= */
+async function renameChat(id) {
+    const title = prompt("Enter new chat name");
+    if (!title) return;
+
+    await fetch(`/api/chat/${id}/rename/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ title })
+    });
+
+    loadHistory(); // 🔥 realtime
+}
+
+async function deleteChat(id) {
+    if (!confirm("Delete this chat?")) return;
+
+    await fetch(`/api/chat/${id}/delete/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    });
+
+    if (currentSession === id) {
+        document.getElementById('chat-window').innerHTML = '';
+        currentSession = null;
+    }
+
+    loadHistory(); // 🔥 realtime
+}
+
+/* ================= LOAD SESSION ================= */
+function loadSession(id){
+    fetch(`/api/history/${id}/`)
+        .then(r => r.json())
+        .then(d => {
+            currentSession = id;
+            const w = document.getElementById('chat-window');
+            w.innerHTML = '';
+            d.messages.forEach(m => addMsg(m.content, m.sender));
+        });
+}
+
+/* ================= NEW CHAT ================= */
+function newChat(){
+    currentSession = null;
+    document.getElementById('chat-window').innerHTML = '';
+}
+
+/* ================= INIT ================= */
+document.addEventListener('DOMContentLoaded', loadHistory);
+</script>
+
+
+</body>
+</html>

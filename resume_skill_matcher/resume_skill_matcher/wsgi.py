@@ -1,16 +1,11 @@
-"""
-WSGI config for resume_skill_matcher project.
-
-It exposes the WSGI callable as a module-level variable named ``application``.
-
-For more information on this file, see
-https://docs.djangoproject.com/en/4.2/howto/deployment/wsgi/
-"""
-
 import os
+import sys
+
+path = '/home/sahil-work13/resume-skill-matcher'
+if path not in sys.path:
+    sys.path.append(path)
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'resume_skill_matcher.settings'
 
 from django.core.wsgi import get_wsgi_application
-
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'resume_skill_matcher.settings')
-
 application = get_wsgi_application()

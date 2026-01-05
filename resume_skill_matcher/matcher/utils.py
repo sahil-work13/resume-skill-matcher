@@ -241,7 +241,7 @@ def recruiter_resume_feedback(resume_text, jd_text):
     You are a senior technical recruiter.
     Review the resume against the job description.
     Provide actionable ATS-friendly improvement suggestions.
-    Give SHORT, SIMPLE, and CLEAR feedback.
+    Give SHORT, SIMPLE, and CLEAR feedback. 
     Do NOT use markdown, stars (*), hashes (#), or bullet symbols.
     Use plain text only.
 
@@ -264,114 +264,74 @@ def recruiter_resume_feedback(resume_text, jd_text):
 
     Keep the response under 120 words.
 
-
-        JOB DESCRIPTION:
-        {jd_text[:1500]}
-
-        RESUME:
-        {resume_text[:1500]}
-    """
-
-    models = ["gemini-2.5-flash", "gemini-pro"]
-
-    for model in models:
-        for attempt in range(3):  # 🔁 retry 3 times
-            try:
-                response = client.models.generate_content(
-                    model=model,
-                    contents=prompt
-                )
-                return response.text
-
-            except Exception as e:
-                error = str(e)
-                if "503" in error or "overloaded" in error.lower():
-                    time.sleep(2 * (attempt + 1))  # ⏳ backoff
-                    continue
-                else:
-                    break  # different error → try next model
-
-    return "AI feedback temporarily unavailable due to high load. Please try again."
-
-
-def call_gemini(prompt):
-    from google import genai
-    import os, time
-
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-
-    for model in ["gemini-2.5-flash", "gemini-pro"]:
-        try:
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt
-            )
-            return response.text.strip()
-        except Exception as e:
-            if "503" in str(e):
-                time.sleep(2)
-                continue
-    return "AI service temporarily unavailable."
-
-def rewrite_resume_bullets(resume_text, jd_text):
-    prompt = f"""
-    Rewrite weak resume bullet points into strong, ATS-friendly bullets.
-    Use action verbs and metrics.
-    Return 5 improved bullets only.
-    Plain text only.
-
     JOB DESCRIPTION:
     {jd_text[:1200]}
 
     RESUME:
     {resume_text[:1200]}
     """
-    return call_gemini(prompt)
 
+    try:
+        response = client.models.generate_content(
+            model="gemini-1.5-flash",
+            contents=prompt
+        )
+        return response.text
 
-def generate_skill_roadmap(missing_skills):
-    roadmap = {}
-    for skill in missing_skills:
-        roadmap[skill] = [
-            f"Learn fundamentals of {skill}",
-            f"Build a small project using {skill}",
-            f"Apply {skill} in a real-world scenario"
-        ]
-    return roadmap
+    except Exception as e:
+        print("Gemini error:", e)
+        return (
+            "AI insights are currently busy. "
+            "Your resume analysis is complete. "
+            "Please retry AI feedback after a short break."
+        )
 
+# utils.py
 
+def build_system_prompt(feature, resume_text, jd_text=None):
+    if feature == "analysis":
+        return f"""
+You are a professional resume analyst.
+Analyze the resume in detail and give structured feedback.
 
-def skill_gap_score(resume_text, jd_text):
-    tfidf = TfidfVectorizer(stop_words="english")
-    vectors = tfidf.fit_transform([resume_text, jd_text])
-    similarity = cosine_similarity(vectors[0], vectors[1])[0][0]
-    return round((1 - similarity) * 100, 2)
+RESUME CONTENT:
+{resume_text}
+"""
 
-def generate_mock_interview_questions(resume_text, jd_text):
-    prompt = f"""
-    Generate 5 technical interview questions based on the resume and job description.
-    Mix theory + practical questions.
-    Plain text, numbered list.
+    elif feature == "ats":
+        return f"""
+You are an ATS optimization expert.
+Evaluate the resume against the job description.
 
-    JOB DESCRIPTION:
-    {jd_text[:1200]}
+JOB DESCRIPTION:
+{jd_text}
 
-    RESUME:
-    {resume_text[:1200]}
-    """
-    return call_gemini(prompt)
+RESUME CONTENT:
+{resume_text}
+"""
 
+    elif feature == "chat":
+        return f"""
+You are a career assistant.
+Answer ONLY using the resume content below.
+If something is not present, say clearly that it is missing.
 
-def ats_keyword_suggestions(resume_text, jd_text):
-    prompt = f"""
-    Extract important ATS keywords from the job description
-    that are missing or weak in the resume.
-    Return as a simple list.
+RESUME CONTENT:
+{resume_text}
+"""
 
-    JOB DESCRIPTION:
-    {jd_text[:1200]}
+    elif feature == "recruiter_feedback":
+        return f"""
+You are a senior recruiter.
+Provide honest feedback based on the resume.
 
-    RESUME:
-    {resume_text[:1200]}
-    """
-    return call_gemini(prompt)
+RESUME CONTENT:
+{resume_text}
+"""
+
+    return f"""
+You are a career assistant.
+
+RESUME CONTENT:
+{resume_text}
+"""

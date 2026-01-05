@@ -34,3 +34,22 @@ class MatchAnalytics(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class ChatSession(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    title = models.CharField(max_length=255, default="New Conversation")
+    created_at = models.DateTimeField(auto_now_add=True)
+    document_text  = models.TextField(null=True, blank=True)  # ✅ REQUIRED
+
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title}"
+
+class ChatMessage(models.Model):
+    session = models.ForeignKey(ChatSession, related_name='messages', on_delete=models.CASCADE)
+    sender = models.CharField(max_length=10, choices=[('user', 'User'), ('bot', 'Bot')])
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['timestamp']
+
