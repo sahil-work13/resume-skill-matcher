@@ -2,6 +2,7 @@ import os
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from huggingface_hub import InferenceClient
+from fastapi.responses import StreamingResponse
 
 # =====================
 # CONFIG
@@ -57,6 +58,7 @@ def chat(request: ChatRequest):
     )
 
     try:
+        
         response = client.text_generation(
             prompt=final_prompt,
             max_new_tokens=request.max_tokens,
@@ -65,6 +67,9 @@ def chat(request: ChatRequest):
         )
 
         return ChatResponse(answer=response)
+        
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
+    

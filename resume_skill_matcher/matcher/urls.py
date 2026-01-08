@@ -12,4 +12,5 @@ urlpatterns = [
     path('api/history/<int:session_id>/', get_session_messages, name='session_messages'),
     path("api/chat/<int:session_id>/rename/", rename_chat),
     path("api/chat/<int:session_id>/delete/", delete_chat),
+
 ]

@@ -32,24 +32,90 @@ body {
 }
 
 /* ================= SIDEBAR ================= */
-.sidebar {
+#sidebar {
     width:280px;
     background:var(--bg-dark);
-    padding:20px;
+    border-right:1px solid var(--border);
+    padding:16px;
     display:flex;
     flex-direction:column;
-    border-right:1px solid var(--border);
-    transition:transform .3s ease;
+    transition:transform 0.3s ease;
+    position:relative;
+    z-index:100;
 }
 
-.sidebar.hidden {
+#sidebar.hidden {
     transform:translateX(-100%);
 }
 
 .sidebar-header {
-    font-weight:700;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:15px;
+}
+
+.sidebar-header h3 { 
+    margin:0;
     font-size:18px;
-    margin-bottom:20px;
+}
+
+.history-list {
+    flex:1;
+    overflow-y:auto;
+    margin-top:10px;
+}
+
+.history-list::-webkit-scrollbar {
+    width:6px;
+}
+
+.history-list::-webkit-scrollbar-thumb {
+    background:var(--border);
+    border-radius:3px;
+}
+
+.history-item {
+    background:rgba(255,255,255,0.03);
+    padding:12px;
+    border-radius:10px;
+    margin-bottom:8px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    transition:background 0.2s;
+}
+
+.history-item:hover {
+    background:rgba(255,255,255,0.08);
+}
+
+.chat-left {
+    cursor:pointer;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    max-width:150px;
+    font-size:14px;
+}
+
+.chat-actions {
+    display:flex;
+    gap:6px;
+}
+
+.chat-actions button {
+    background:none;
+    border:none;
+    color:var(--muted);
+    cursor:pointer;
+    font-size:14px;
+    transition:all 0.2s;
+}
+
+.chat-actions button:hover {
+    color:white;
+    transform:scale(1.1);
 }
 
 .new-chat-btn {
@@ -58,83 +124,13 @@ body {
     padding:12px;
     border-radius:10px;
     color:white;
-    font-weight:600;
     cursor:pointer;
-    margin-bottom:20px;
+    font-weight:500;
+    transition:transform 0.2s;
 }
 
-.history-list {
-    flex:1;
-    overflow-y:auto;
-}
-
-.history-item {
-    background:rgba(255,255,255,.04);
-    padding:10px 12px;
-    border-radius:10px;
-    margin-bottom:10px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:8px;
-    cursor:pointer;
-}
-
-.history-title {
-    flex:1;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-    font-size:13px;
-    color:var(--muted);
-}
-
-.history-item:hover .history-title {
-    color:white;
-}
-
-/* 3-dot menu */
-.menu {
-    position:relative;
-}
-
-.menu-btn {
-    background:none;
-    border:none;
-    color:var(--muted);
-    cursor:pointer;
-    font-size:18px;
-}
-
-.menu-dropdown {
-    display:none;
-    position:absolute;
-    right:0;
-    top:20px;
-    background:var(--bg-card);
-    border:1px solid var(--border);
-    border-radius:8px;
-    overflow:hidden;
-    z-index:50;
-}
-
-.menu-dropdown button {
-    background:none;
-    border:none;
-    padding:8px 12px;
-    color:var(--text);
-    font-size:13px;
-    width:100%;
-    text-align:left;
-    cursor:pointer;
-}
-
-.menu-dropdown button:hover {
-    background:rgba(255,255,255,.08);
-}
-
-.menu.open .menu-dropdown {
-    display:block;
+.new-chat-btn:hover {
+    transform:translateY(-1px);
 }
 
 /* ================= MAIN ================= */
@@ -142,140 +138,355 @@ body {
     flex:1;
     display:flex;
     flex-direction:column;
+    position:relative;
+    min-width:0;
 }
 
+/* Header */
 .header {
-    padding:16px 24px;
     background:var(--bg-dark);
-    border-bottom:1px solid var(--border);
+    padding:14px 20px;
     display:flex;
     align-items:center;
-    gap:15px;
+    border-bottom:1px solid var(--border);
+    position:sticky;
+    top:0;
+    z-index:10;
 }
 
 .toggle-btn {
-    font-size:20px;
-    background:none;
-    border:none;
-    color:white;
+    font-size:22px;
+    cursor:pointer;
+    margin-right:15px;
+    transition:transform 0.2s;
+}
+
+.toggle-btn:hover {
+    transform:scale(1.1);
+}
+
+.header h3 {
+    margin:0;
+    font-size:18px;
+    flex:1;
+}
+
+/* Profile */
+.profile-wrapper {
+    margin-left:auto;
+    position:relative;
     cursor:pointer;
 }
 
-.header h2 {
-    margin:0;
-    font-size:18px;
+.profile-avatar {
+    width:38px;
+    height:38px;
+    border-radius:50%;
+    background:var(--primary);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:600;
+    transition:transform 0.2s;
 }
 
-/* ================= CHAT ================= */
+.profile-avatar:hover {
+    transform:scale(1.05);
+}
+
+.profile-dropdown {
+    position:absolute;
+    right:0;
+    top:50px;
+    background:var(--bg-card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px;
+    display:none;
+    min-width:200px;
+    box-shadow:0 4px 20px rgba(0,0,0,0.3);
+}
+
+.profile-dropdown div:first-child {
+    font-weight:600;
+    margin-bottom:4px;
+}
+
+.profile-dropdown div:last-child {
+    font-size:13px;
+    color:var(--muted);
+}
+
+/* Chat Window */
 #chat-window {
     flex:1;
     overflow-y:auto;
-    padding:30px 20px 160px;
+    padding:20px;
+    padding-bottom:160px;
     display:flex;
     flex-direction:column;
-    gap:20px;
 }
 
+#chat-window::-webkit-scrollbar {
+    width:8px;
+}
+
+#chat-window::-webkit-scrollbar-thumb {
+    background:var(--border);
+    border-radius:3px;
+}
+
+/* WhatsApp-style messages */
 .msg {
-    max-width:75%;
-    padding:14px 18px;
-    border-radius:16px;
-    line-height:1.6;
+    display:inline-block;
+    max-width:70%;
+    padding:12px 16px;
+    border-radius:12px;
+    margin-bottom:12px;
+    word-wrap:break-word;
+    line-height:1.5;
+    font-size:15px;
+    animation:fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity:0;
+        transform:translateY(10px);
+    }
+    to {
+        opacity:1;
+        transform:translateY(0);
+    }
 }
 
 .msg.user {
-    align-self:flex-end;
     background:var(--primary);
-    color:white;
+    align-self:flex-end;
+    margin-left:auto;
+    border-bottom-right-radius:4px;
 }
 
 .msg.bot {
-    align-self:flex-start;
     background:var(--bg-card);
     border:1px solid var(--border);
+    align-self:flex-start;
+    border-bottom-left-radius:4px;
 }
 
-.msg.bot h3 { margin:10px 0 5px; }
+.msg.bot p {
+    margin:0 0 10px 0;
+}
 
-/* ================= INPUT ================= */
-.input-container {
-    position:fixed;
+.msg.bot p:last-child {
+    margin-bottom:0;
+}
+
+.msg.bot ul, .msg.bot ol {
+    margin:8px 0;
+    padding-left:20px;
+}
+
+.msg.bot li {
+    margin:4px 0;
+}
+
+.msg.bot code {
+    background:rgba(0,0,0,0.3);
+    padding:2px 6px;
+    border-radius:4px;
+    font-size:13px;
+}
+
+.msg.bot pre {
+    background:rgba(0,0,0,0.3);
+    padding:12px;
+    border-radius:6px;
+    overflow-x:auto;
+    margin:8px 0;
+}
+
+.msg.bot pre code {
+    background:none;
+    padding:0;
+}
+
+/* Typing */
+#typing {
+    display:none;
+    color:var(--primary);
+    margin-left:20px;
+    font-size:14px;
+    animation:pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity:0.5; }
+    50% { opacity:1; }
+}
+
+/* Input */
+.input-bar {
+    position:absolute;
     bottom:0;
-    left:0;
-    right:0;
-    padding:30px 0 40px;
-    background:linear-gradient(transparent, var(--bg-main) 45%);
+    width:100%;
+    padding:20px;
+    background:linear-gradient(transparent,var(--bg-main) 40%);
+    pointer-events:none;
 }
 
-.input-wrapper {
-    max-width:900px;
+.input-box {
+    max-width:850px;
     margin:auto;
     display:flex;
     align-items:center;
-    gap:12px;
+    gap:10px;
     background:var(--bg-card);
     border:1px solid var(--border);
-    border-radius:26px;
-    padding:12px 16px;
+    border-radius:25px;
+    padding:8px 12px;
+    pointer-events:all;
+    transition:border-color 0.2s;
 }
 
-input {
+.input-box:focus-within {
+    border-color:var(--primary);
+}
+
+.input-box input {
     flex:1;
     background:none;
     border:none;
-    outline:none;
     color:white;
+    outline:none;
     font-size:15px;
+    padding:8px;
 }
 
-button.send {
+.input-box input::placeholder {
+    color:var(--muted);
+}
+
+.input-box label {
+    cursor:pointer;
+    font-size:20px;
+    color:var(--muted);
+    transition:color 0.2s;
+    display:flex;
+    align-items:center;
+}
+
+.input-box label:hover {
+    color:white;
+}
+
+.input-box button {
     background:var(--primary);
     border:none;
-    width:40px;
-    height:40px;
-    border-radius:50%;
     color:white;
+    border-radius:50%;
+    width:38px;
+    height:38px;
     cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transition:transform 0.2s;
+    font-size:18px;
 }
 
-#typing {
-    text-align:center;
-    font-size:12px;
-    color:var(--primary);
-    display:none;
+.input-box button:hover {
+    transform:scale(1.05);
+}
+
+.input-box button:active {
+    transform:scale(0.95);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    #sidebar {
+        position:absolute;
+        height:100%;
+        z-index:1000;
+    }
+
+    #sidebar.hidden {
+        transform:translateX(-100%);
+    }
+
+    .msg {
+        max-width:85%;
+        font-size:14px;
+    }
+
+    .header h3 {
+        font-size:16px;
+    }
+
+    .input-box {
+        margin:0 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .msg {
+        max-width:90%;
+    }
+
+    #sidebar {
+        width:260px;
+    }
 }
 </style>
 </head>
 
 <body>
 
-<div class="sidebar" id="sidebar">
-    <div class="sidebar-header">Chat History</div>
+<!-- SIDEBAR -->
+<div id="sidebar">
+    <div class="sidebar-header">
+        <h3>Chats</h3>
+    </div>
+
     <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
-    <div class="history-list" id="history"></div>
+
+    <div class="history-list"></div>
 </div>
 
+<!-- MAIN -->
 <div class="main">
+
     <div class="header">
-        <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
-        <h2>AI Career Assistant</h2>
+        <span class="toggle-btn" onclick="toggleSidebar()">☰</span>
+        <h3>AI Career Assistant</h3>
+
+        <div class="profile-wrapper" onclick="toggleProfile()">
+            <div class="profile-avatar">
+                {{ user.username|first|upper }}
+            </div>
+            <div class="profile-dropdown" id="profileDropdown">
+                <div>{{ user.get_full_name|default:user.username }}</div>
+                <div>{{ user.email }}</div>
+            </div>
+        </div>
     </div>
 
     <div id="chat-window">
         <div class="msg bot">
-            Hi {{ user_display_name }}, ask anything about your resume 👋
+            Hi {{ user_display_name }}, how can I help you today?
         </div>
     </div>
 
     <div id="typing">Assistant is thinking...</div>
 
-    <div class="input-container">
-        <div class="input-wrapper">
-             <label for="file-upload" style="cursor:pointer;font-size:20px">➕</label>
-    <input type="file" id="file-upload" multiple hidden onchange="uploadFiles()">
+    <div class="input-bar">
+        <div class="input-box">
+            <label for="file-upload">➕</label>
+            <input type="file" id="file-upload" multiple hidden onchange="uploadFiles()">
 
-            <input id="input" placeholder="Ask a question…" onkeydown="if(event.key==='Enter')send()">
-            <button class="send" onclick="send()">➤</button>
+            <input id="input" placeholder="Ask something..." onkeydown="if(event.key==='Enter')send()">
+            <button onclick="send()">➤</button>
         </div>
     </div>
 </div>
@@ -283,162 +494,171 @@ button.send {
 <script>
 let currentSession = null;
 
-/* ================= FILE UPLOAD ================= */
+/* Sidebar toggle */
+function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('hidden');
+}
+
+/* Profile dropdown */
+function toggleProfile(){
+    const d=document.getElementById('profileDropdown');
+    d.style.display=d.style.display==='block'?'none':'block';
+}
+document.addEventListener('click',e=>{
+    if(!e.target.closest('.profile-wrapper')){
+        const d=document.getElementById('profileDropdown');
+        if(d) d.style.display='none';
+    }
+});
+
+/* Messages */
+function addMsg(text, type) {
+    const chatWindow = document.getElementById('chat-window');
+    const div = document.createElement('div');
+    div.className = `msg ${type}`;
+
+    if (type === 'bot') {
+        div.innerHTML = marked.parse(text || '');
+    } else {
+        div.textContent = text;
+    }
+
+    chatWindow.appendChild(div);
+    div.scrollIntoView({ behavior: 'smooth' });
+}
+
+/* Upload files */
 async function uploadFiles(){
-    const input = document.getElementById('file-upload');
-    if (!input.files.length) return;
+    const input=document.getElementById('file-upload');
+    if(!input.files.length) return;
 
-    const form = new FormData();
-    for (const f of input.files) form.append('files', f);
+    const form=new FormData();
+    for(const f of input.files) form.append('files',f);
 
-    const res = await fetch('/api/upload/', {
-        method: 'POST',
-        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
-        body: form
+    const res=await fetch('/api/upload/',{
+        method:'POST',
+        headers:{'X-CSRFToken':'{{ csrf_token }}'},
+        body:form
     });
 
-    const data = await res.json();
-    addMsg(data.message || 'Files uploaded', 'bot');
+    const data=await res.json();
+    addMsg(data.message,'bot');
+    input.value='';
+}
+
+/* Send message */
+async function send() {
+    const input = document.getElementById('input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    addMsg(text, 'user');
     input.value = '';
+
+    try {
+        const res = await fetch('/chatbot/api/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                question: text,
+                session_id: currentSession
+            })
+        });
+
+        const data = await res.json();
+
+        if (data.answer) {
+            addMsg(data.answer, 'bot');
+            currentSession = data.session_id;
+        } else {
+            addMsg('No response from AI.', 'bot');
+        }
+
+    } catch (err) {
+        addMsg('Error connecting to server.', 'bot');
+    }
 }
 
-/* ================= UI HELPERS ================= */
-function addMsg(text, type){
-    const d = document.createElement('div');
-    d.className = `msg ${type}`;
-    d.innerHTML = type === 'bot' ? marked.parse(text) : text;
-    document.getElementById('chat-window').appendChild(d);
-    d.scrollIntoView({ behavior: 'smooth' });
-}
+/* Load history */
+async function loadHistory(){
+    const res=await fetch('/api/history/');
+    const chats=await res.json();
+    const list=document.querySelector('.history-list');
+    list.innerHTML='';
 
-/* ================= SEND MESSAGE ================= */
-async function send(){
-    const i = document.getElementById('input');
-    if (!i.value.trim()) return;
-
-    addMsg(i.value, 'user');
-    document.getElementById('typing').style.display = 'block';
-
-    const res = await fetch('/chatbot/api/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify({
-            question: i.value,
-            session_id: currentSession
-        })
-    });
-
-    const data = await res.json();
-    currentSession = data.session_id;
-
-    addMsg(data.answer, 'bot');
-    i.value = '';
-    document.getElementById('typing').style.display = 'none';
-
-    loadHistory(); // 🔥 realtime refresh
-}
-
-/* ================= SIDEBAR HISTORY ================= */
-async function loadHistory() {
-    const res = await fetch('/api/history/');
-    const chats = await res.json();
-
-    const list = document.querySelector('.history-list');
-    list.innerHTML = '';
-
-    chats.forEach(chat => {
-        const div = document.createElement('div');
-        div.className = 'history-item';
-        div.innerHTML = `
-            <span class="chat-title" onclick="loadSession(${chat.id})">
-                ${chat.title}
-            </span>
-
-            <span class="three-dots" onclick="toggleMenu(event, ${chat.id})">⋮</span>
-
-            <div class="dropdown-menu" id="menu-${chat.id}">
-                <div onclick="renameChat(${chat.id})">Rename</div>
-                <div onclick="deleteChat(${chat.id})">Delete</div>
+    chats.forEach(c=>{
+        const div=document.createElement('div');
+        div.className='history-item';
+        div.innerHTML=`
+            <div class="chat-left" onclick="loadSession(${c.id})">${c.title}</div>
+            <div class="chat-actions">
+                <button onclick="renameChat(${c.id})">✏️</button>
+                <button onclick="deleteChat(${c.id})">🗑️</button>
             </div>
         `;
         list.appendChild(div);
     });
 }
 
-/* ================= MENU TOGGLE ================= */
-function toggleMenu(event, id) {
-    event.stopPropagation();
-
-    document.querySelectorAll('.dropdown-menu')
-        .forEach(m => m.style.display = 'none');
-
-    const menu = document.getElementById(`menu-${id}`);
-    menu.style.display = 'block';
-}
-
-document.addEventListener('click', () => {
-    document.querySelectorAll('.dropdown-menu')
-        .forEach(m => m.style.display = 'none');
-});
-
-/* ================= CHAT ACTIONS ================= */
-async function renameChat(id) {
-    const title = prompt("Enter new chat name");
-    if (!title) return;
-
-    await fetch(`/api/chat/${id}/rename/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify({ title })
-    });
-
-    loadHistory(); // 🔥 realtime
-}
-
-async function deleteChat(id) {
-    if (!confirm("Delete this chat?")) return;
-
-    await fetch(`/api/chat/${id}/delete/`, {
-        method: 'POST',
-        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
-    });
-
-    if (currentSession === id) {
-        document.getElementById('chat-window').innerHTML = '';
-        currentSession = null;
-    }
-
-    loadHistory(); // 🔥 realtime
-}
-
-/* ================= LOAD SESSION ================= */
+/* Load session */
 function loadSession(id){
-    fetch(`/api/history/${id}/`)
-        .then(r => r.json())
-        .then(d => {
-            currentSession = id;
-            const w = document.getElementById('chat-window');
-            w.innerHTML = '';
-            d.messages.forEach(m => addMsg(m.content, m.sender));
-        });
+    fetch(`/api/history/${id}/`).then(r=>r.json()).then(d=>{
+        currentSession=id;
+        const w=document.getElementById('chat-window');
+        w.innerHTML='';
+        d.messages.forEach(m=>addMsg(m.content,m.sender));
+    });
 }
 
-/* ================= NEW CHAT ================= */
+/* Rename */
+async function renameChat(id){
+    const t=prompt("New chat name");
+    if(!t) return;
+
+    await fetch(`/api/chat/${id}/rename/`,{
+        method:'POST',
+        headers:{
+            'Content-Type':'application/json',
+            'X-CSRFToken':'{{ csrf_token }}'
+        },
+        body:JSON.stringify({title:t})
+    });
+    loadHistory();
+}
+
+/* Delete */
+async function deleteChat(id){
+    if(!confirm("Delete this chat?")) return;
+
+    await fetch(`/api/chat/${id}/delete/`,{
+        method:'POST',
+        headers:{'X-CSRFToken':'{{ csrf_token }}'}
+    });
+
+    if(currentSession===id){
+        document.getElementById('chat-window').innerHTML='';
+        currentSession=null;
+    }
+    loadHistory();
+}
+
+/* New chat */
 function newChat(){
-    currentSession = null;
-    document.getElementById('chat-window').innerHTML = '';
+    currentSession=null;
+    document.getElementById('chat-window').innerHTML='';
 }
 
-/* ================= INIT ================= */
-document.addEventListener('DOMContentLoaded', loadHistory);
+/* Init */
+document.addEventListener('DOMContentLoaded',loadHistory);
+window.addEventListener('load', () => {
+    document.querySelectorAll('.msg.bot').forEach(div => {
+        div.innerHTML = marked.parse(div.innerText);
+    });
+});
 </script>
-
 
 </body>
 </html>

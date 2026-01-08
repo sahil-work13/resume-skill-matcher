@@ -120,51 +120,6 @@ def generate_docx_report(response, context):
         except Exception:
             pass
 
-def call_gemini(prompt):
-    from google import genai
-    import os, time
-
-    client = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-
-    for model in ["gemini-2.5-flash", "gemini-pro"]:
-        try:
-            response = client.models.generate_content(
-                model=model,
-                contents=prompt
-            )
-            return response.text.strip()
-        except Exception as e:
-            if "503" in str(e):
-                time.sleep(2)
-                continue
-    return "AI service temporarily unavailable."
-
-
-def rewrite_resume_bullets(resume_text, jd_text):
-    prompt = f"""
-    Rewrite weak resume bullet points into strong, ATS-friendly bullets.
-    Use action verbs and metrics.
-    Return 5 improved bullets only.
-    Plain text only.
-
-    JOB DESCRIPTION:
-    {jd_text[:1200]}
-
-    RESUME:
-    {resume_text[:1200]}
-    """
-    return call_gemini(prompt)
-
-
-def generate_skill_roadmap(missing_skills):
-    roadmap = {}
-    for skill in missing_skills:
-        roadmap[skill] = [
-            f"Learn fundamentals of {skill}",
-            f"Build a small project using {skill}",
-            f"Apply {skill} in a real-world scenario"
-        ]
-    return roadmap
 
 def skill_gap_score(resume_text, jd_text):
     tfidf = TfidfVectorizer(stop_words="english")
@@ -172,31 +127,6 @@ def skill_gap_score(resume_text, jd_text):
     similarity = cosine_similarity(vectors[0], vectors[1])[0][0]
     return round((1 - similarity) * 100, 2)
 
-def generate_mock_interview_questions(resume_text, jd_text):
-    prompt = f"""
-    Generate 5 technical interview questions based on the resume and job description.
-    Mix theory + practical questions.
-    Plain text, numbered list.
 
-    JOB DESCRIPTION:
-    {jd_text[:1200]}
 
-    RESUME:
-    {resume_text[:1200]}
-    """
-    return call_gemini(prompt)
-
-def ats_keyword_suggestions(resume_text, jd_text):
-    prompt = f"""
-    Extract important ATS keywords from the job description
-    that are missing or weak in the resume.
-    Return as a simple list.
-
-    JOB DESCRIPTION:
-    {jd_text[:1200]}
-
-    RESUME:
-    {resume_text[:1200]}
-    """
-    return call_gemini(prompt)
 

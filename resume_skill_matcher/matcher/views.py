@@ -272,9 +272,7 @@ def resume_chatbot_api(request):
     if not user_query:
         return JsonResponse({"error": "Empty question"}, status=400)
 
-    # =========================
-    # A️⃣ HANDLE CHAT SESSION
-    # =========================
+    # A️⃣ SESSION
     if not session_id:
         session = ChatSession.objects.create(
             user=request.user,
@@ -284,32 +282,67 @@ def resume_chatbot_api(request):
     else:
         session = ChatSession.objects.get(id=session_id, user=request.user)
 
-    # =========================
-    # B️⃣ SAVE USER MESSAGE
-    # =========================
+    # B️⃣ SAVE USER MSG
     ChatMessage.objects.create(
         session=session,
         sender="user",
         content=user_query
     )
 
-    # =========================
-    # C️⃣ BUILD DOCUMENT CONTEXT
-    # =========================
+    # C️⃣ DOCUMENT CONTEXT
     extra_context = request.session.get("extra_context", "")
 
-    # 🔐 HARD LIMIT to avoid HF 500 errors
-    MAX_CHARS = 6000   # ~4k tokens safe
+    MAX_CHARS = 6000
     if len(extra_context) > MAX_CHARS:
         extra_context = extra_context[-MAX_CHARS:]
 
-
     system_prompt = (
-        "You are a professional career assistant.\n"
-        "Answer STRICTLY from the provided document content.\n"
-        "If the answer is not present, say:\n"
-        "'The document does not contain this information.'"
-    )
+    "You are a professional career assistant.\n\n"
+
+    "IMPORTANT RULES:\n"
+    "1. Answer ONLY using the information present in the provided document.\n"
+    "2. Do NOT assume, infer, or add any information that is not explicitly written.\n"
+    "3. If the answer is not found in the document, reply exactly:\n"
+    "'The document does not contain this information.'\n\n"
+
+    "RESPONSE STYLE (MANDATORY):\n"
+    "- Use clear section headings (###) with relevant emojis\n"
+    "- Use bullet points for lists with appropriate icons\n"
+    "- Keep a clean, professional, ChatGPT-style structure\n"
+    "- Avoid long paragraphs unless necessary\n"
+    "- Be concise but complete\n"
+    "- Make responses visually engaging with emojis and symbols\n\n"
+
+    "FORMATTING GUIDELINES:\n"
+    "- Use Markdown formatting\n"
+    "- Group related information under meaningful headings with emojis\n"
+    "- Use bold text for key labels when appropriate\n"
+    "- Use visual indicators:\n"
+    "  ✅ for positive points, achievements, or confirmations\n"
+    "  ❌ for limitations, gaps, or things to avoid\n"
+    "  ⚠️ for warnings or important notes\n"
+    "  📋 for lists or summaries\n"
+    "  💼 for work experience\n"
+    "  🎓 for education\n"
+    "  🔧 for skills or tools\n"
+    "  📧 for contact information\n"
+    "  🎯 for goals or objectives\n"
+    "  📍 for location\n"
+    "  📅 for dates or timeline\n"
+    "  💡 for suggestions or tips\n"
+    "  ⭐ for highlights or key points\n"
+    "  🚀 for projects or achievements\n\n"
+
+    "EXAMPLE FORMAT:\n"
+    "### 💼 Work Experience\n"
+    "✅ **Current Role:** Senior Developer at ABC Corp\n"
+    "✅ **Key Achievement:** Led team of 5 developers\n"
+    "❌ **Gap:** No management certification mentioned\n\n"
+
+    "Your goal is to provide well-structured, visually appealing, recruiter-ready answers "
+    "that strictly reflect the document content while being easy to scan and understand."
+)
+
 
     final_prompt = f"""
 DOCUMENT CONTENT:
@@ -321,9 +354,7 @@ USER QUESTION:
 {user_query}
 """
 
-    # =========================
-    # D️⃣ CALL FASTAPI (HF)
-    # =========================
+    # D️⃣ HF FASTAPI CALL
     fastapi_url = "https://sk1354-llama3-career-api.hf.space/chat"
 
     payload = {
@@ -339,9 +370,6 @@ USER QUESTION:
             timeout=90
         )
 
-        print("FASTAPI STATUS:", response.status_code)
-        print("FASTAPI TEXT:", response.text)
-
         resp_json = response.json()
 
         if response.status_code == 200 and "answer" in resp_json:
@@ -350,12 +378,9 @@ USER QUESTION:
             bot_answer = f"AI error: {resp_json}"
 
     except Exception as e:
-        print("FASTAPI CALL FAILED:", str(e))
         bot_answer = "Sorry, I couldn't reach the AI server."
 
-    # =========================
-    # E️⃣ SAVE BOT MESSAGE
-    # =========================
+    # E️⃣ SAVE BOT MSG
     ChatMessage.objects.create(
         session=session,
         sender="bot",
@@ -367,7 +392,6 @@ USER QUESTION:
         "session_id": session_id,
         "new_title": session.title
     })
-
 
     
 @login_required
