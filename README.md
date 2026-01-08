@@ -1,15 +1,29 @@
 🚀 AI Resume & Career Assistant
 
-An end-to-end AI-powered Resume Analysis & Career Assistant platform that allows users to upload resumes and job descriptions, analyze compatibility, and interact with their documents using an LLM-powered chatbot.
+An end-to-end AI-powered Resume Analysis & Career Assistant that helps users analyze resumes, match them with job descriptions, and interact with their documents using an LLM-powered chatbot.
 
-This system supports multi-document context, session-aware chat memory, document-based Q&A, and production-grade AI deployment using FastAPI + Hugging Face + Django.
+The platform supports multi-document understanding, session-aware chat memory, document-grounded Q&A, and production-grade AI deployment using Django, FastAPI, and Hugging Face (LLaMA-3).
+
+✨ What This Project Does (In Simple Terms)
+
+Upload your resume and job description
+
+Get ATS score, skill match, and recruiter insights
+
+Chat with your resume like ChatGPT
+
+Ask questions directly from your documents
+
+Download detailed PDF / DOCX reports
+
+All chats are saved and can be resumed anytime
 
 📌 Key Features
 📄 Resume & Job Description Analysis
 
-Upload Resume (PDF/DOCX) and Job Description
+Upload Resume (PDF / DOCX) and Job Description
 
-Extract:
+Automatically extract:
 
 Skills
 
@@ -17,7 +31,7 @@ Experience
 
 Education
 
-Role & Seniority
+Role & seniority level
 
 Calculate:
 
@@ -29,55 +43,59 @@ Requirement coverage
 
 Role fit score
 
-🤖 AI Career Chatbot (Llama-3 Powered)
+🤖 AI Career Chatbot (LLaMA-3 Powered)
 
 Ask questions directly from uploaded documents
 
-Examples:
+Example queries:
 
 “Summarize my skills”
 
 “What job roles fit my profile?”
 
-“Rewrite my experience section”
+“Rewrite my experience section professionally”
 
-Strict document grounding (no hallucination)
+Strict document grounding
 
-ChatGPT-style structured responses with:
+No hallucinations
 
-Headings
+No assumptions
+
+ChatGPT-style responses with:
+
+Clear headings
 
 Bullet points
 
 Emojis
 
-Clear formatting
+Clean formatting
 
 📂 Multi-Document Support
 
-Upload multiple PDFs / DOCX files per chat
+Upload multiple PDFs / DOCX files in one chat
 
-No re-upload required for every question
+Ask multiple questions without re-uploading
 
 Session-aware document memory
 
 🧠 Chat History & Sessions
 
-Each conversation saved as a Chat Session
+Each conversation is saved as a chat session
 
-Sidebar history
+Sidebar chat history
 
-Rename / Delete chats
+Rename or delete chats
 
-Resume conversation anytime
+Resume conversations anytime
 
 ⚡ Streaming AI Responses
 
 Token-by-token streaming (ChatGPT-like typing)
 
-Faster perceived response time
+Faster and more natural interaction
 
-Professional UX
+Professional user experience
 
 📊 ATS & Recruiter Insights
 
@@ -87,7 +105,7 @@ Keyword gap detection
 
 Recruiter-style feedback
 
-Improvement suggestions
+Actionable improvement suggestions
 
 📥 Report Generation
 
@@ -98,19 +116,19 @@ PDF
 DOCX
 
 🏗️ System Architecture
-Frontend (HTML / JS / CSS)
+Frontend (HTML / CSS / JavaScript)
         |
-        |  Fetch API (Streaming)
+        | Fetch API (Streaming)
         ↓
 Django Backend (Auth, Sessions, Storage)
         |
-        | HTTP Request
+        | HTTP API Call
         ↓
-FastAPI AI Service (HuggingFace Space)
+FastAPI AI Service (Hugging Face Space)
         |
-        | Llama-3 Inference
+        | LLaMA-3 Inference
         ↓
-AI Response Stream → User Interface
+Streaming AI Response → User Interface
 
 🧰 Tech Stack
 🔹 Frontend
@@ -125,11 +143,11 @@ Fetch API (Streaming)
 
 Marked.js (Markdown rendering)
 
-🔹 Backend (Main App)
+🔹 Backend (Main Application)
 
 Django
 
-Django Auth (Login Required)
+Django Authentication (Login Required)
 
 Django Sessions
 
@@ -141,27 +159,27 @@ REST APIs (JSON)
 
 FastAPI
 
-HuggingFace Inference Client
+Hugging Face Inference Client
 
 Meta LLaMA-3 (8B Instruct)
 
-StreamingResponse
+StreamingResponse (real-time output)
 
 🔹 AI / NLP Tools
 
-LangChain (Document loading)
+LangChain (document loading)
 
-PDF / DOCX parsers
+PDF & DOCX parsers
 
 Skill extraction logic
 
 Context builders
 
-Prompt engineering
+Advanced prompt engineering
 
 🔹 Deployment
 
-Hugging Face Spaces (FastAPI AI)
+Hugging Face Spaces (FastAPI AI service)
 
 Environment variables (HF_TOKEN)
 
@@ -169,9 +187,9 @@ Uvicorn ASGI server
 
 🔐 Authentication & Security
 
-User authentication required for:
+Login required for:
 
-Chatbot
+Chatbot access
 
 Resume upload
 
@@ -179,22 +197,22 @@ Chat history
 
 Each user has isolated chat sessions
 
-Document context is never shared across users
+Uploaded document context is never shared
 
 Prompt injection protection:
 
-Strict document-only answering
+Answers only from documents
 
-No assumptions allowed
+No assumptions or fabricated data
 
 🧠 AI Prompt Strategy
 System Prompt Rules
 
-Answer only from provided documents
+Answer only from the provided documents
 
 No assumptions or hallucinations
 
-Clear fallback:
+Fallback message:
 
 “The document does not contain this information.”
 
@@ -206,7 +224,7 @@ ChatGPT-style structure
 
 Headings, bullet points, emojis
 
-Recruiter-friendly answers
+Recruiter-friendly and easy to scan
 
 📁 Project Structure (Simplified)
 project/
@@ -233,11 +251,11 @@ project/
 │
 └── README.md
 
-🔁 Request Flow (Chatbot)
+🔁 Chatbot Request Flow
 
 User uploads resume / documents
 
-Text extracted & stored in session
+Text is extracted and stored in session
 
 User asks a question
 
@@ -255,21 +273,21 @@ Streams response from LLaMA-3
 
 Django:
 
-Forwards stream
+Forwards the stream
 
 Frontend:
 
-Displays streaming answer
+Displays live typing
 
 Renders Markdown
 
-🧪 Example Queries
+🧪 Example Questions
 
 “Summarize my technical skills”
 
 “What job roles fit me best?”
 
-“What are my educational qualifications?”
+“What is my educational background?”
 
 “Which skills am I missing for a backend role?”
 
@@ -277,7 +295,7 @@ Renders Markdown
 
 🚀 Future Enhancements
 
-Vector embeddings (FAISS / Chroma)
+Vector embeddings (FAISS / ChromaDB)
 
 Semantic document search
 
@@ -289,7 +307,7 @@ Job recommendation engine
 
 Admin analytics dashboard
 
-Real-time WebSocket streaming
+WebSocket-based real-time streaming
 
 👨‍💻 Author
 
@@ -301,12 +319,12 @@ Aspiring Full-Stack & AI Engineer
 
 Production-grade AI architecture
 
+Real LLM deployment (no mock APIs)
+
+Strong prompt safety & grounding
+
 Clean separation of concerns
-
-Real LLM deployment (not mock)
-
-Strong prompt safety
 
 Recruiter-ready outputs
 
-Scalable design
+Scalable and extensible design
